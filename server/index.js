@@ -2,6 +2,7 @@ const express = require('express');
 const path = require('path');
 
 var session = require('express-session')
+var cookieParser = require('cookie-parser')
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -10,8 +11,29 @@ const HTML_FILE = path.join(DIST_DIR, 'index.html');
 
 app.use(express.static(DIST_DIR));
 //app.use(bodyParser.urlencoded({ extended: false }));
-app.use(session({ secret: 'cats' }));
 
+// initilaize cookie-parser to allow us to access the cookies stored in the browser
+app.use(cookieParser());
+
+// initialize express-session to allow us to track the logged-in user across sessions.
+app.use(session({ 
+    key: 'user_sid',
+    secret: 'somerandomstuff',
+    resave: false,
+    saveUninitialized: false, 
+    cookie: {
+        expires: 60000
+    } 
+}));
+
+// This middleware will check if user's cookie is still saved in brower and user is not set, then autmatically log the user out.
+// This usually happens when you stop your express server after login, your cookie still remain saved in broswer.
+app.use((req, res, next) => {
+    if ( req.cookies.user_sid && !req.session.user) {
+        res.clearCookie('user_sid');
+    }
+    next();
+});
 
 //
 // Setup Passport.
@@ -48,6 +70,8 @@ passport.use('current-rms',
             // Cool we have gained credentials... 
             console.log('strategy callback function with access token etc')
             
+            //req.session.user = accessToken;
+
             done(null, {accessToken, refreshToken, profile}); // passes the profile data to serializeUser
         }
     )
@@ -62,6 +86,16 @@ function isUserAuthenticated(req, res, next) {
         res.send('You must login!');
     }
 }
+
+// Middleware function to check to logged-in users
+var sessionChecker = (req, res, next) => {
+    if (req.session.user && req.cookies.user_sid) {
+        res.redirect('/dashboard');
+    } else {
+        next();
+    }
+};
+
 
 //
 // Current-RMS authentication Routes
@@ -90,7 +124,7 @@ app.get(
 // opportunities, indirectly route this to current-rms?.
 app.get( '/opportunities', (req, res) => {
     console.log('Attempting to get current-rms opportunities');
-    req.user
+    //req.user
 
     const OPPORTUNITIES_SERIVCE_URL = 'https://api.current-rms.com/api/v1/opportunities';
     
