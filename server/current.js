@@ -26,7 +26,7 @@ function isAuthenticated(req) {
 
 async function getOpportunityItems(opportunity_id, accessToken) {
 
-    const OPPORTUNITIES_ITEMS_URL = '/opportunities/${opportunity_id}/opportunity_items';
+    let OPPORTUNITIES_ITEMS_URL = '/opportunities/' + opportunity_id + '/opportunity_items';
 
     let res = await axios.get( CURRENT_RMS_API_URL + OPPORTUNITIES_ITEMS_URL, { 
         headers: { 
@@ -34,8 +34,8 @@ async function getOpportunityItems(opportunity_id, accessToken) {
             'Authorization': 'Bearer '+ accessToken 
         }});
 
-    let { data }  = res;
-    return data;
+    let { opportunity_items }  = res.data;
+    return opportunity_items;
 }
 
 getOpportunities = async (accessToken) => {
@@ -59,15 +59,29 @@ router.get(
                 
                 const accessToken = req.session.passport.user.accessToken;
 
-                let result = await getOpportunities( accessToken );
+                let opportunities = await getOpportunities( accessToken );
                 
-                // for ( op in result ) {
-                //     let items = await getOpportunityItems( op["id"], accessToken );
-                //     console.log( items );
-                // }
+                console.log( 'fetching items' );
+
+                for ( i in opportunities ) {
+                    let items = await getOpportunityItems( i, accessToken );
+                    
+                    // prep services list
+                    opportunities[i].services = [];
+
+                    // Walk the items in search of services?
+                    for ( j in items ) {
+                        console.log( items[j].item_type );
+                        if ( items[j].item_type == "Service" ) {
+                            opportunities[i].services.push( items[j] ); 
+                        }
+                    }
+
+                    console.log( opportunities[i].services );
+                }
 
                 res.setHeader('Content-Type', 'application/json');
-                res.send( JSON.stringify(result) );
+                res.send( JSON.stringify(opportunities) );
             }
             else {
                 res.end();
