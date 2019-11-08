@@ -1,23 +1,26 @@
-import React from 'react'
-import {BootstrapTable, TableHeaderColumn} from 'react-bootstrap-table-next'
-
-//import '../css/Table.css'
-import 'react-bootstrap-table-next/dist/react-bootstrap-table2.min.css';
+import React from 'react';
+import BootstrapTable from 'react-bootstrap-table-next';
+// import 'react-bootstrap-table-next/dist/react-bootstrap-table2.min.css';
 
 function rowClassNameFormat(row, rowIdx) {
     return rowIdx % 2 === 0 ? 'Gold-Row' : 'Silver-Row';
 }
 
-const SimpleOpportunityTable = (props) => {
+const SimpleOpportunityTable = ({data, isFetching }) => {
+    
+    const columns = [{
+        dataField: 'id',
+        text: 'ID'
+    }, {
+        dataField: 'subject',
+        text: 'Subject'
+    }];
+
     return (
         <div>
-            {/* <BootstrapTable data={props.data} 
-                            trClassName={rowClassNameFormat}>
-                <TableHeaderColumn isKey dataField='id' />               
-                <TableHeaderColumn dataField='name' />
-                <TableHeaderColumn dataField='username' />
-            </BootstrapTable> */}
-            <p>{props.isFetching ? 'Fetching Opportunities...' : ''}</p>
+            <BootstrapTable keyField='id' data={ data } columns={ columns } />
+
+            <p>{isFetching ? 'Fetching Opportunities...' : ''}</p>
         </div>
     )
 };

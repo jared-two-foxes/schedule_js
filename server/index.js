@@ -1,139 +1,103 @@
+// index.js
+
+/**
+ * Required External Modules
+ */
+
 const express = require('express');
+const cors = require('cors');
 const path = require('path');
 
-var session = require('express-session')
-var cookieParser = require('cookie-parser')
+const expressSession = require('express-session');
+const passport = require('passport')
+var OAuth2Strategy = require('passport-oauth').OAuth2Strategy;
 
+
+/**
+ * App Variables
+ */
 const app = express();
 const port = process.env.PORT || 3000;
+
 const DIST_DIR = path.join(__dirname, '../dist');
 const HTML_FILE = path.join(DIST_DIR, 'index.html');
 
-app.use(express.static(DIST_DIR));
-//app.use(bodyParser.urlencoded({ extended: false }));
 
-// initilaize cookie-parser to allow us to access the cookies stored in the browser
-app.use(cookieParser());
 
-// initialize express-session to allow us to track the logged-in user across sessions.
-app.use(session({ 
-    key: 'user_sid',
-    secret: 'somerandomstuff',
+/**
+ * Session Configuration
+ */
+
+const session = {
+    secret: "LoxodontaElephasMammuthusPalaeoloxodonPrimelephas",
+    cookie: {}, // default { path: '/', httpOnly: true, secure: false, maxAge: null }
     resave: false,
-    saveUninitialized: false, 
-    cookie: {
-        expires: 60000
-    } 
-}));
-
-// This middleware will check if user's cookie is still saved in brower and user is not set, then autmatically log the user out.
-// This usually happens when you stop your express server after login, your cookie still remain saved in broswer.
-app.use((req, res, next) => {
-    if ( req.cookies.user_sid && !req.session.user) {
-        res.clearCookie('user_sid');
-    }
-    next();
-});
-
-//
-// Setup Passport.
-var passport = require('passport');
-app.use(passport.initialize());
-app.use(passport.session());
-
-
-passport.serializeUser( function(user, done) {
-    console.log(`SerialiseUser: ` + JSON.stringify(user));
-    done(null, user);
-});
-
-passport.deserializeUser( function(user, done){
-    console.log(`deserializeUser: ${user}`);
-    done(null, user);
-});
-
-
-//
-// Setup oAuth2 Strategy
-var OAuth2Strategy = require('passport-oauth').OAuth2Strategy;
-
-passport.use('current-rms',
-    new OAuth2Strategy(
-        {
-            authorizationURL:'https://twofoxesstyling.current-rms.com/oauth2/authorize',
-            tokenURL: 'https://twofoxesstyling.current-rms.com/oauth2/token',
-            clientID: '8fba8e6b6a9ef7eabc0a70843a3ad9ae19ed785dd01cd4960b49cfd1300c07a0',
-            clientSecret: 'b6e6ab31e76e94f8f660471ea667ba3c98f50c5a94e02b8447e2907bdfda7743',
-            callbackURL: 'http://localhost:3000/auth/current/callback'
-        },
-        function(accessToken, refreshToken, profile, done){
-            // Cool we have gained credentials... 
-            console.log('strategy callback function with access token etc')
-            
-            //req.session.user = accessToken;
-
-            done(null, {accessToken, refreshToken, profile}); // passes the profile data to serializeUser
-        }
-    )
-);
-
-
-// Middleware to check if the user is authenticated
-function isUserAuthenticated(req, res, next) {
-    if (req.user) {
-        next();
-    } else {
-        res.send('You must login!');
-    }
-}
-
-// Middleware function to check to logged-in users
-var sessionChecker = (req, res, next) => {
-    if (req.session.user && req.cookies.user_sid) {
-        res.redirect('/dashboard');
-    } else {
-        next();
-    }
+    saveUninitialized: false
 };
 
 
-//
-// Current-RMS authentication Routes
+/**
+ * Passport Configuration
+ */
 
-// Redirect the user to the OAuth 2.0 provider for authentication.  When
-// compelte, the provider will redirect the user back to the application
-// at /auth/provider/callback.
-app.get( 
-    "/auth/current",
-    passport.authenticate("current-rms")
+const strategy = new OAuth2Strategy(
+    {
+        authorizationURL:'https://twofoxesstyling.current-rms.com/oauth2/authorize',
+        tokenURL: 'https://twofoxesstyling.current-rms.com/oauth2/token',
+        clientID: '8fba8e6b6a9ef7eabc0a70843a3ad9ae19ed785dd01cd4960b49cfd1300c07a0',
+        clientSecret: 'b6e6ab31e76e94f8f660471ea667ba3c98f50c5a94e02b8447e2907bdfda7743',
+        callbackURL: 'http://localhost:3000/auth/current/callback'
+    },
+    function(accessToken, refreshToken, profile, done){
+        /**
+         * Access tokens are used to authorize users to an API
+         * (resource server)
+         * accessToken is the token to call the Auth0 API
+         * or a secured third-party API
+         * extraParams.id_token has the JSON Web Token
+         * profile has all the information from the user
+         */
+        
+        // Cool we have gained credentials... 
+        console.log('strategy callback function with access token etc');
+        console.log( "accessToken:", accessToken );
+        done(null, {accessToken, refreshToken}); // passes the profile data to serializeUser
+    }
 );
 
-// The OAuth 2.0 provider has redirected the user back to the application.
-// Finish the authentication process by attempting to obtain an access
-// token.  If authorization was granted, the user will be logged in.
-// Otherwise, authentication has failed.
-app.get(
-    "/auth/current/callback",
-    passport.authenticate(
-        "current-rms",
-        { successRedirect: '/',
-          failureRedirect: '/login' }
-    )
-);
 
-// opportunities, indirectly route this to current-rms?.
-app.get( '/opportunities', (req, res) => {
-    console.log('Attempting to get current-rms opportunities');
-    //req.user
+/** 
+ * App Configuration
+ */
 
-    const OPPORTUNITIES_SERIVCE_URL = 'https://api.current-rms.com/api/v1/opportunities';
-    
-    fetch(OPPORTUNITIES_SERIVCE_URL)
-        .then(response => {
-            res.setHeader('Content-Type', 'application/json');
-            res.send(response.json())            
-        });
-});
+// const corsOptions = {
+//     methods: ['GET', "HEAD", "OPTIONS", "POST", "PUT" ],
+//     allowedHeaders: ['Content-Type', 'Authorization']
+// };
+
+// app.use(cors(corsOptions));
+// app.options('*', cors(corsOptions));
+
+app.use(cors());
+
+app.use(express.static(DIST_DIR));
+app.use(expressSession(session));
+
+passport.use('current-rms', strategy);
+app.use(passport.initialize());
+app.use(passport.session());
+
+passport.serializeUser( (user, done) => done(null, user) );
+passport.deserializeUser( (user, done) => done(null, user) );
+
+// Auth Routes
+const authRouter = require("./auth");
+app.use("/", authRouter);
+
+// Auth Routes
+const currentRouter = require("./current");
+app.use("/", currentRouter);
+
 
 // Main page.
 app.get( '/', (req, res) => {

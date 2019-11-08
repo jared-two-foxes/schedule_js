@@ -1,8 +1,7 @@
 import React, { Component } from 'react';
 import SimpleOpportunityTable from './SimpleOpportunityTable'
 
-//const OPPORTUNITIES_SERIVCE_URL = 'http://localhost:3000/opportunities'
-const OPPORTUNITIES_SERIVCE_URL = 'https://api.current-rms.com/api/v1/opportunities';
+const OPPORTUNITIES_SERIVCE_URL = 'http://localhost:3000/current/opportunities';
 
 class OpportunityHOC extends Component {
     constructor(props) {
@@ -21,15 +20,17 @@ class OpportunityHOC extends Component {
 
     componentDidMount() {
         this.fetchUsers();
-        //this.timer = setInterval(()=> this.fetchUsers(), 5000); // five seconds
     }
 
     fetchUsers() {
+        console.log( 'about to attempt to pull opportunities' );
+
         this.setState({...this.state, isFetching: true});
-        fetch(OPPORTUNITIES_SERIVCE_URL)
+        fetch(OPPORTUNITIES_SERIVCE_URL, { method: 'GET' })
             .then(response => response.json())
             .then(result => {
-                this.state({items: result, isFetching: false});
+                console.log( result );
+                this.setState({items: result, isFetching: false});
             })
             .catch( e => { 
                 console.log(e);
