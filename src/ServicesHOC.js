@@ -1,9 +1,9 @@
 import React, { Component } from 'react';
 import SimpleOpportunityTable from './SimpleOpportunityTable'
 
-const OPPORTUNITIES_SERIVCE_URL = 'http://localhost:3000/current/opportunities';
+const SERIVCES_URL = 'http://localhost:3000/current/services';
 
-class OpportunityHOC extends Component {
+class ServicesHOC extends Component {
     constructor(props) {
         super(props);
         this.state = {
@@ -18,8 +18,17 @@ class OpportunityHOC extends Component {
             dataField: 'id',
             text: 'ID'
         }, {
-            dataField: 'subject',
-            text: 'Subject'
+            dataField: 'name',
+            text: 'Name'
+        }, {
+            dataField: 'opportunity_name',
+            text: 'Opportunity'
+        }, {
+            dataField: 'starts_at',
+            text: 'Start'
+        }, {
+            dataField: 'ends_at',
+            text: 'End'
         }];
         
         return (
@@ -32,10 +41,8 @@ class OpportunityHOC extends Component {
     }
 
     fetchUsers() {
-        console.log( 'about to attempt to pull opportunities' );
-
         this.setState({...this.state, isFetching: true});
-        fetch(OPPORTUNITIES_SERIVCE_URL, { method: 'GET' })
+        fetch(SERIVCES_URL, { method: 'GET' })
             .then(response => response.json())
             .then(result => {
                 console.log( result );
@@ -48,4 +55,4 @@ class OpportunityHOC extends Component {
     }
 }
 
-export default OpportunityHOC;
+export default ServicesHOC;

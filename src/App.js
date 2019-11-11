@@ -3,6 +3,7 @@ import logo from './logo.svg';
 import queryString from "query-string";
 
 import OpportunitiesHOC from "./OpportunitiesHOC";
+import ServicesHOC from "./ServicesHOC";
 
 import './App.scss';
 
@@ -31,7 +32,8 @@ class App extends Component {
           </a>
         </header>
         {/* { this.state.authorized && <OpportunitiesHOC /> } */}
-        <OpportunitiesHOC />
+        {/* <div><OpportunitiesHOC /></div> */}
+        <div><ServicesHOC /></div>
       </div>
     );
   }

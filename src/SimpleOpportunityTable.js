@@ -6,21 +6,13 @@ function rowClassNameFormat(row, rowIdx) {
     return rowIdx % 2 === 0 ? 'Gold-Row' : 'Silver-Row';
 }
 
-const SimpleOpportunityTable = ({data, isFetching }) => {
+const SimpleOpportunityTable = ({data, columns, isFetching }) => {
     
-    const columns = [{
-        dataField: 'id',
-        text: 'ID'
-    }, {
-        dataField: 'subject',
-        text: 'Subject'
-    }];
-
     return (
         <div>
             <BootstrapTable keyField='id' data={ data } columns={ columns } />
 
-            <p>{isFetching ? 'Fetching Opportunities...' : ''}</p>
+            <p>{isFetching ? 'Fetching Data...' : ''}</p>
         </div>
     )
 };
