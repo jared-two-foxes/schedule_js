@@ -35,33 +35,34 @@ function getAccessToken( req ) {
 }
 
 
-async function getOpportunityItems(opportunity_id, accessToken) {
+async function GetResource( url, accessToken ) {
 
-    let OPPORTUNITIES_ITEMS_URL = '/opportunities/' + opportunity_id + '/opportunity_items';
-
-    let res = await axios.get( CURRENT_RMS_API_URL + OPPORTUNITIES_ITEMS_URL, { 
+    let headers = {
         headers: { 
             'X-SUBDOMAIN': 'twofoxesstyling', 
             'Authorization': 'Bearer '+ accessToken 
-        }});
+        }
+    };
 
-    let { opportunity_items }  = res.data;
+    let res = await axios.get( url, headers );
+
+    return res.data;
+}
+
+getOpportunityItems = async (accessToken, opportunity_id) => {
+    let url = CURRENT_RMS_API_URL + '/opportunities/' 
+        + opportunity_id + '/opportunity_items';
+
+    let { opportunity_items } = await GetResource( url, accessToken );
     return opportunity_items;
 }
 
 getOpportunityPage = async (accessToken, page, per_page, filter) => {
-    const OPPORTUNITIES_URL = '/opportunities';
+    let url = CURRENT_RMS_API_URL + '/opportunities'
+      + '?page=' + page + "&per_page=" + per_page 
+      + "&filter=" + filter;
 
-    let res = await axios.get( 
-            CURRENT_RMS_API_URL + OPPORTUNITIES_URL + '?page=' + page + "&per_page=" + per_page + "&filter=" + filter, 
-            { 
-                headers: { 
-                    'X-SUBDOMAIN': 'twofoxesstyling', 
-                    'Authorization': 'Bearer '+ accessToken 
-                }   
-            });
-
-    let { opportunities }  = res.data;
+    let { opportunities } = await GetResource(url, accessToken);
     return opportunities;
 }
 
@@ -126,25 +127,14 @@ router.get(
 
                 console.log( 'Fetching Opportunity Items' );
                 for ( i in opportunities ) {
-                    console.log( "getting items for opportuntity; " + opportunities[i].id + " " + opportunities[i].subject );
-
-                    let items = await getOpportunityItems( opportunities[i].id, getAccessToken(req) );
+                    let items = await getOpportunityItems( getAccessToken(req), opportunities[i].id );
                     
-                    // Walk the list of items in search of services
-                    for ( j in items ) {    
-                        if ( items[j].item_type == 'Service' ) {
-                            console.log( "We have " + services.length + " Services" );
-                            
-                            let item = items[j];
-                            item.opportunity_name = opportunities[i].subject;
+                    // Filter items list for services
+                    let service_items = items.filter( 
+                        (item) => { return (item.item_type == 'Service'); });
 
-                            services.push( item ); 
-                        }
-
-                        if (services.length >= MAX_SERVICES) {
-                            break;
-                        }
-                    }
+                    // Add any services_items to the services list.
+                    services = services.concat( service_items ); 
 
                     if (services.length >= MAX_SERVICES) {
                         break;
