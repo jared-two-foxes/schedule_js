@@ -21,7 +21,7 @@ class ServicesHOC extends Component {
             dataField: 'name',
             text: 'Name'
         }, {
-            dataField: 'opportunity_name',
+            dataField: 'opportunity_subject',
             text: 'Opportunity'
         }, {
             dataField: 'starts_at',

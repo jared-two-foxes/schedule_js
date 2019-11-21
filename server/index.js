@@ -98,7 +98,6 @@ app.use("/", authRouter);
 const currentRouter = require("./current");
 app.use("/", currentRouter);
 
-
 // Main page.
 app.get( '/', (req, res) => {
     console.log(req.user);
