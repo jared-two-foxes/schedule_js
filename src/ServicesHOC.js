@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import { DateUtils } from 'react-day-picker';
 import DayPickerInput from 'react-day-picker/DayPickerInput';
 import SimpleOpportunityTable from './SimpleOpportunityTable'
 
@@ -9,15 +10,41 @@ const SERIVCES_URL = 'http://localhost:3000/current/services';
 class ServicesHOC extends Component {
     constructor(props) {
         super(props);
-        this.state = {
-            start: null,
-            end: null,
+        this.handleDayChange = this.handleDayChange.bind(this);
+        this.handleResetClick = this.handleResetClick.bind(this);
+        this.state = this.getInitialState();
+    }
+
+    getInitialState() {
+        return {
+            from: null,
+            to: null,
+            lastFetch: {
+                from: null,
+                to: null
+            },
             isFetching: false,
             items: []
-        };
+        }
+    }
+
+    handleDayChange(day) {
+        // Store the original range
+        const { from, to } = this.state;
+        const range = DateUtils.addDayToRange(new Date(day), this.state);
+
+        // Update if range differs.
+        if ( range.from != from || range.to != to ) {
+            this.setState({ ...this.state, ...range });
+        }
+    }
+
+    handleResetClick() {
+        this.setState(this.getInitialState());
     }
 
     render() {
+        const { from, to, items } = this.state;
 
         const columns = [{
             dataField: 'id',
@@ -39,37 +66,63 @@ class ServicesHOC extends Component {
         return (
             <div>
                 <div style={{float: 'right'}}>
+                    <p>
+                        {!from && !to && 'Please select the first day.'}
+                        {from && !to && 'Please select the last day.'}
+                        {from && to && `Selected from ${from.toLocaleDateString()} to ${to.toLocaleDateString()}`}{' '}
+                        {from && to && (
+                            <button className="link" onClick={this.handleResetClick}>
+                                Reset
+                            </button>
+                        )}
+                    </p>
                     <div style={{float: 'left'}}>
-                        <p>Please type a start date: </p>
-                        <DayPickerInput onDayChange={day => this.setState({...this.state, start: day})} />
+                        <DayPickerInput onDayChange={this.handleDayChange} />
                     </div>
                     <div style={{float: 'left'}}>
-                        <p>Please type an end date: </p>
-                        <DayPickerInput onDayChange={day => this.setState({...this.state, end: day})} />
+                        <DayPickerInput onDayChange={this.handleDayChange} />
                     </div>
                 </div>
                 <div style={{clear: 'both'}}>
-                    <SimpleOpportunityTable data = {this.state.items} columns={columns} isFetching = {this.state.isFetching} />
+                    <SimpleOpportunityTable data = {items} columns={columns} isFetching = {this.state.isFetching} />
                 </div>
             </div>
         )
     };
 
-    componentDidMount() {
-        this.fetchUsers();
+    // componentDidMount() {
+    //     this.fetchUsers();
+    // }
+
+    componentDidUpdate() {
+        const { from, to, lastFetch } = this.state;
+        if ( from != lastFetch.from && to != lastFetch.to ) {
+            this.fetchUsers();
+        }
     }
 
     fetchUsers() {
-        this.setState({...this.state, isFetching: true});
-        fetch(SERIVCES_URL, { method: 'GET' })
+        const { from, to } = this.state;
+
+        this.setState({lastFetch: {from, to}, isFetching: true});
+
+        let params = {};
+        if ( from != null ) {
+            params.startDate = from.getTime();
+        }
+        if ( to != null ) {
+            params.endDate = to.getTime();
+        }
+        const paramString = new URLSearchParams(params);
+            
+        fetch(SERIVCES_URL + "?" + paramString.toString(), { method: 'GET' })
             .then(response => response.json())
             .then(result => {
-                console.log( result );
                 this.setState({items: result, isFetching: false});
             })
             .catch( e => { 
                 console.log(e);
-                this.setState({...this.state, isFetching: false});
+                this.setState({isFetching: false});
             });
     }
 }

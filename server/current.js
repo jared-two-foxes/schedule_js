@@ -7,6 +7,7 @@
 const express = require("express");
 const router = express.Router();
 const axios = require("axios");
+
 require('datejs');
 
 const { inspect } = require('util')
@@ -81,23 +82,8 @@ getAllOpportunities = async (accessToken, filter) => {
             break;
         }
 
-        // // Lets filter all the opportunities by the current date, add if the start
-        // // or end date is within the next 2 weeks?
-        // var today = Date.today();
-        // var fortnightAway = Date.today().add({days: 14});
-
         // Push all the listed opportunities into our return list.
         for ( r in result ) {
-            // var o = result[r];
-            // var starts_at = Date.parse( o[starts_at] );
-
-            // console.log( starts_at );
-
-            // if ( starts_at.between( today, fortnightAway ) ) {
-            //     console.log( "Opportunity within the next 14 days")
-            //     opportunities.push( result[r] );
-            // }
-
             opportunities.push( result[r] );
         }
 
@@ -130,17 +116,19 @@ router.get(
     "/current/services",
     isAuthenticated,
     async (req, res, next) => {      
+        const MAX_SERVICES = 8;
+            
+        let services = [];
+
+        // Lets filter all the opportunities by the current date, add if the start
+        // or end date is within the next 2 weeks?
+        const startDate = !req.query.startDate ? Date.today() : new Date(parseInt(req.query.startDate));
+        const endDate = !req.query.endDate ? Date.today().add({days: 7}) : new Date(parseInt(req.query.endDate));
+        
+        let debugMsg = `Colating Services between ${startDate} & ${endDate}`
+        console.log(debugMsg);
+
         try {      
-            let services = [];
-
-            const MAX_SERVICES = 8;
-
-            // Lets filter all the opportunities by the current date, add if the start
-            // or end date is within the next 2 weeks?
-            const today = Date.today();
-            const fortnightAway = Date.today().add({days: 14});
-
-
             let page = 1;
             while (services.length < MAX_SERVICES) {
                 
@@ -152,27 +140,26 @@ router.get(
                 
                 for ( i in opportunities ) {
                     var o = opportunities[i];
-                    var starts_at = Date.parse( o.starts_at );
+                    var starts_at = new Date( o.starts_at );
 
-                    if ( !starts_at.between( today, fortnightAway ) ) {
+                    if ( !starts_at.between( startDate, endDate ) ) {
                         continue;
                     }
 
-                    let items = await getOpportunityItems( getAccessToken(req), o.id );
+                    const items = await getOpportunityItems( getAccessToken(req), o.id );
                     
                     // Filter items list for services
-                    let service_items = items.filter( 
+                    const service_items = items.filter( 
                         (item) => { return (item.item_type == 'Service'); });
 
                     // Need to add the opportunity name to the struct thats sent down.
-                    for ( j in service_items ) {
-                        service_items[j].opportunity_subject = o.subject;
-                        services.push( service_items[j] );
-                    }
-
+                    const service_items_with_opportunity_details = service_items.map( s => ({ ...s, opportunity_subject: o.subject}))
+                    
                     // Add any services_items to the services list.
-                    //services = services.concat( service_items ); 
+                    services = services.concat( service_items_with_opportunity_details ); 
 
+                    //@todo: Add Pagination?
+                    // Break if we have enough services. 
                     if (services.length >= MAX_SERVICES) {
                         break;
                     }
@@ -181,12 +168,11 @@ router.get(
                 page = page + 1;
             }
 
-            console.log( services );
-
             // send services
             console.log('Sending services');
             res.setHeader('Content-Type', 'application/json');
             res.send( JSON.stringify(services) );
+            console.log('Services sent!');
         }
         catch (error) {
             console.log( "error!" );
