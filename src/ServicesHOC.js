@@ -5,7 +5,7 @@ import SimpleOpportunityTable from './SimpleOpportunityTable'
 
 import 'react-day-picker/lib/style.css';
 
-const SERIVCES_URL = 'http://localhost:3000/current/services';
+const SERIVCES_URL = 'http://localhost:3000/tasks';
 
 class ServicesHOC extends Component {
     constructor(props) {

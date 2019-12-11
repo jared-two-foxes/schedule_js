@@ -97,7 +97,7 @@ const authRouter = require("./auth");
 app.use("/", authRouter);
 
 // Auth Routes
-const currentRouter = require("./current");
+const currentRouter = require("./tasks");
 app.use("/", currentRouter);
 
 // Main page.

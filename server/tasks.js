@@ -1,4 +1,4 @@
-// auth.js
+// tasks.js
 
 /**
  * Required External Modules
@@ -6,18 +6,13 @@
 
 const express = require("express");
 const router = express.Router();
-const axios = require("axios");
 
-require('datejs');
+const current_api = require("./current_api");
 
-const { inspect } = require('util')
 
 /**
- * Routes Definitions
+ * Authentication
  */
-
-const CURRENT_RMS_API_URL = 'https://api.current-rms.com/api/v1';
-
 
 function isAuthenticated(req, res, next) {
 
@@ -41,79 +36,12 @@ function getAccessToken( req ) {
 }
 
 
-async function GetResource( url, accessToken ) {
-
-    let headers = {
-        headers: { 
-            'X-SUBDOMAIN': 'twofoxesstyling', 
-            'Authorization': 'Bearer '+ accessToken 
-        }
-    };
-
-    let res = await axios.get( url, headers );
-
-    return res.data;
-}
-
-getOpportunityItems = async (accessToken, opportunity_id) => {
-    let url = CURRENT_RMS_API_URL + '/opportunities/' 
-        + opportunity_id + '/opportunity_items';
-
-    let { opportunity_items } = await GetResource( url, accessToken );
-    return opportunity_items;
-}
-
-getOpportunityPage = async (accessToken, page, per_page, filter) => {
-    let url = CURRENT_RMS_API_URL + '/opportunities'
-      + '?page=' + page + "&per_page=" + per_page 
-      + "&filter=" + filter;
-
-    let { opportunities } = await GetResource(url, accessToken);
-    return opportunities;
-}
-
-getAllOpportunities = async (accessToken, filter) => {
-    let page = 1;
-    let opportunities = [];
-    while (true) {
-        // Lets get all the remaining opportunities.
-        let result = await getOpportunityPage( accessToken, page, 50, filter );
-        if ( !result || !result.length ) {
-            break;
-        }
-
-        // Push all the listed opportunities into our return list.
-        for ( r in result ) {
-            opportunities.push( result[r] );
-        }
-
-        page = page + 1;
-    }
-    
-    return opportunities;
-}
+/**
+ * Routes
+ */
 
 router.get( 
-    "/current/opportunities",
-    isAuthenticated,
-    async (req, res, next) => {      
-        try {  
-            console.log( 'Fetching Opportunities' );
-            let opportunities = await getAllOpportunities( getAccessToken(req), 'live' );
-            
-            console.log('Sending Opportunities');
-            res.setHeader('Content-Type', 'application/json');
-            res.send( JSON.stringify(opportunities) );
-        }
-        catch (error) {
-            console.log( "error!" );
-            next(error);
-        }
-    }
-);
-
-router.get( 
-    "/current/services",
+    "/tasks",
     isAuthenticated,
     async (req, res, next) => {      
         const MAX_SERVICES = 8;
@@ -133,7 +61,7 @@ router.get(
             while (services.length < MAX_SERVICES) {
                 
                 //@todo: Filter the opportunities based upon date?                
-                let opportunities = await getOpportunityPage( getAccessToken(req), page, 25, 'live' );
+                let opportunities = await current_api.getOpportunityPage( getAccessToken(req), page, 25, 'live' );
                 if ( !opportunities || !opportunities.length ) {
                     break;
                 }
@@ -146,7 +74,7 @@ router.get(
                         continue;
                     }
 
-                    const items = await getOpportunityItems( getAccessToken(req), o.id );
+                    const items = await current_api.getOpportunityItems( getAccessToken(req), o.id );
                     
                     // Filter items list for services
                     const service_items = items.filter( 
@@ -180,6 +108,7 @@ router.get(
         }
     }
 );
+
 
 /**
  * Module Exports
