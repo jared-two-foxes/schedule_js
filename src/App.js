@@ -61,6 +61,7 @@ class App extends Component {
         <header className="App-header">
           <img src={logo} className="App-logo" alt="logo" />
           { !authenticated && <a className="App-link" href="http://localhost:3000/auth/current" > Log In </a> }
+          { authenticated && <a className="App-link" href="http://localhost:3000/auth/logout" > Log Out </a> }
         </header>
         {/* <div>
           <button className="link" onClick={this.updateOpportunity}>
