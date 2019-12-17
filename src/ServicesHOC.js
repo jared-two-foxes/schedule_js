@@ -90,10 +90,6 @@ class ServicesHOC extends Component {
         )
     };
 
-    // componentDidMount() {
-    //     this.fetchUsers();
-    // }
-
     componentDidUpdate() {
         const { from, to, lastFetch } = this.state;
         if ( from != lastFetch.from && to != lastFetch.to ) {

@@ -42,14 +42,6 @@ const session = {
  * App Configuration
  */
 
-// const corsOptions = {
-//     methods: ['GET', "HEAD", "OPTIONS", "POST", "PUT" ],
-//     allowedHeaders: ['Content-Type', 'Authorization']
-// };
-
-// app.use(cors(corsOptions));
-// app.options('*', cors(corsOptions));
-
 app.use(cors());
 
 app.use(express.static(DIST_DIR));
