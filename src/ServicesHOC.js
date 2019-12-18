@@ -8,6 +8,31 @@ import 'react-day-picker/lib/style.css';
 
 const SERIVCES_URL = 'http://localhost:3000/tasks';
 
+const columns = [
+    { id: 'id', label: 'ID', minWidth: 170 },
+    { id: 'opportunity_subject', label: 'Opportunity', minWidth: 100 },
+    {
+      id: 'name',
+      label: 'Name',
+      minWidth: 170,
+      align: 'right'
+    },
+    {
+      id: 'starts_at',
+      label: 'Start',
+      minWidth: 170,
+      align: 'right',
+      format: value => value.toLocaleString(),
+    },
+    {
+      id: 'ends_at',
+      label: 'Ends',
+      minWidth: 170,
+      align: 'right',
+      format: value => value.toFixed(2),
+    },
+  ];
+
 class ServicesHOC extends Component {
     constructor(props) {
         super(props);
@@ -45,25 +70,8 @@ class ServicesHOC extends Component {
     }
 
     render() {
-        const { from, to, items } = this.state;
+        const { from, to, items, fetching } = this.state;
 
-        const columns = [{
-            dataField: 'id',
-            text: 'ID'
-        }, {
-            dataField: 'opportunity_subject',
-            text: 'Opportunity'
-        }, {
-            dataField: 'name',
-            text: 'Name'
-        }, {
-            dataField: 'starts_at',
-            text: 'Start'
-        }, {
-            dataField: 'ends_at',
-            text: 'End'
-        }];
-        
         return (
             <div>
                 <div style={{float: 'right'}}>
@@ -85,7 +93,7 @@ class ServicesHOC extends Component {
                     </div>
                 </div>
                 <div style={{clear: 'both'}}>
-                    <SimpleOpportunityTable data = {items} columns={columns} isFetching = {this.state.isFetching} />
+                    <SimpleOpportunityTable data={items} columns={columns} isFetching={fetching} />
                 </div>
             </div>
         )
