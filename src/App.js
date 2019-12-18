@@ -1,8 +1,29 @@
 import React, { Component } from 'react';
-import logo from './logo.svg';
 import ServicesHOC from "./ServicesHOC";
 
+import { withStyles } from '@material-ui/core/styles';
+
+import AppBar from '@material-ui/core/AppBar'
+import Toolbar from '@material-ui/core/Toolbar'
+import Typography from '@material-ui/core/Typography'
+import Link from '@material-ui/core/Link'
+import IconButton from '@material-ui/core/IconButton'
+import MenuIcon from '@material-ui/icons/Menu'
+
+//import logo from './logo.svg';
 import './App.scss';
+
+const useStyles = theme => ({
+  root: {
+    flexGrow: 1,
+  },
+  menuButton: {
+    marginRight: theme.spacing(2),
+  },
+  title: {
+    flexGrow: 1,
+  },
+});
 
 class App extends Component {
   
@@ -55,23 +76,27 @@ class App extends Component {
   // }
 
   render() {
+    const { classes } = this.props;
     const { authenticated } = this.state;
     return (
-      <div className="App">
-        <header className="App-header">
-          <img src={logo} className="App-logo" alt="logo" />
-          { !authenticated && <a className="App-link" href="http://localhost:3000/auth/current" > Log In </a> }
-          { authenticated && <a className="App-link" href="http://localhost:3000/auth/logout" > Log Out </a> }
-        </header>
-        {/* <div>
-          <button className="link" onClick={this.updateOpportunity}>
-              Update
-          </button>
-        </div> */}
-        <div><ServicesHOC /></div>
+      <div className={classes.root}>
+        <AppBar position="static">
+          <Toolbar>
+            <IconButton edge="start" className={classes.menuButton} color="inherit" aria-label="menu">
+              <MenuIcon />
+            </IconButton>
+            <Typography variant="h6" className={classes.title}>
+              Scheduler
+            </Typography>
+            { authenticated ? 
+              <Link color="inherit" href="http://localhost:3000/auth/logout">Log Out</Link> : 
+              <Link color="inherit" href="http://localhost:3000/auth/current">Log In</Link> }
+          </Toolbar>
+        </AppBar>
+        <ServicesHOC />
       </div>
     );
   }
 }
 
-export default App;
+export default withStyles(useStyles)(App);

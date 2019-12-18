@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { DateUtils } from 'react-day-picker';
 import DayPickerInput from 'react-day-picker/DayPickerInput';
+import Button from '@material-ui/core/Button'
 import SimpleOpportunityTable from './SimpleOpportunityTable'
 
 import 'react-day-picker/lib/style.css';
@@ -71,9 +72,9 @@ class ServicesHOC extends Component {
                         {from && !to && 'Please select the last day.'}
                         {from && to && `Selected from ${from.toLocaleDateString()} to ${to.toLocaleDateString()}`}{' '}
                         {from && to && (
-                            <button className="link" onClick={this.handleResetClick}>
+                            <Button className="link" onClick={this.handleResetClick}>
                                 Reset
-                            </button>
+                            </Button>
                         )}
                     </p>
                     <div style={{float: 'left'}}>

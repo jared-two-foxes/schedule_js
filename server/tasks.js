@@ -19,7 +19,7 @@ function isAuthenticated(req, res, next) {
     // Apparently this should be set and we can check that 
     // rather than directly accessing the passport link?
 
-    //console.log( req.user.authenticated );
+    //console.log( req.session.passport );
 
     if ( req.session != null && 
          req.session.passport != null && 
@@ -101,6 +101,52 @@ router.get(
             res.setHeader('Content-Type', 'application/json');
             res.send( JSON.stringify(services) );
             console.log('Services sent!');
+        }
+        catch (error) {
+            console.log( "error!" );
+            next(error);
+        }
+    }
+);
+
+function opportunityFilter(op) {
+    return op;
+}
+
+// make this a post maybe then we can use it as part of a form?
+router.put( 
+    "/updateTask",
+    isAuthenticated,
+    async (req, res, next) => {      
+        try {      
+            console.log('updating the task!');
+
+            let id = 1064;
+            
+            //@todo: Filter the opportunities based upon date?                
+            const opportunity = await current_api.getOpportunityById(
+                 getAccessToken(req), id );
+            if ( !opportunity ) {
+                console.log('failed to get opportunity!');
+                res.sendStatus( 200 ); //@todo: Http Failure message.
+                return;
+            }
+                
+            //@todo: apply filter to opportunity.
+            let body = {}
+            body.opportunity = opportunityFilter( opportunity );
+            
+            // Update the data on current.
+            current_api
+                .updateOpportunity( getAccessToken(req), id, body )
+                .catch( e => {
+                    console.log( e );
+                });
+
+            // send services
+            // res.setHeader('Content-Type', 'application/json');
+            // res.send( JSON.stringify(services) );
+            res.sendStatus( 200 );
         }
         catch (error) {
             console.log( "error!" );

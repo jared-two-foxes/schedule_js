@@ -18,7 +18,6 @@ const CURRENT_RMS_API_URL = 'https://api.current-rms.com/api/v1';
 
 
 async function GetResource( url, accessToken ) {
-
     let headers = {
         headers: { 
             'X-SUBDOMAIN': 'twofoxesstyling', 
@@ -38,6 +37,15 @@ async function getOpportunityItems(accessToken, opportunity_id) {
 
     let { opportunity_items } = await GetResource( url, accessToken );
     return opportunity_items;
+}
+
+async function getOpportunityById(accessToken, id) {
+    let url = CURRENT_RMS_API_URL + '/opportunities/'
+    + id;
+
+    let { opportunity } = await GetResource(url, accessToken);
+
+    return opportunity;
 }
 
 async function getOpportunityPage(accessToken, page, per_page, filter) {
@@ -70,6 +78,26 @@ async function getAllOpportunities(accessToken, filter) {
     return opportunities;
 }
 
+async function updateOpportunity(accessToken, id, body) {
+    let url = CURRENT_RMS_API_URL + '/opportunities/'
+      + id;
+
+    let headers = {
+        headers: { 
+            'X-SUBDOMAIN': 'twofoxesstyling', 
+            'Authorization': 'Bearer '+ accessToken,
+            'Content-Type': 'application/json'
+        }
+    };
+
+    let res = await axios.put( url, body, headers );
+
+    console.log( res );
+
+    return res;
+}
+
+
 /**
  * Module Exports
  */
@@ -77,5 +105,7 @@ async function getAllOpportunities(accessToken, filter) {
 module.exports = { 
     getOpportunityItems,
     getOpportunityPage,
-    getAllOpportunities
+    getAllOpportunities,
+    getOpportunityById,
+    updateOpportunity
 };
