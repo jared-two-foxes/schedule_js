@@ -41,7 +41,7 @@ function getAccessToken( req ) {
  */
 
 router.get( 
-    "/tasks",
+    "/",
     isAuthenticated,
     async (req, res, next) => {      
         const MAX_SERVICES = 8;
@@ -115,7 +115,7 @@ function opportunityFilter(op) {
 
 // make this a post maybe then we can use it as part of a form?
 router.put( 
-    "/updateTask",
+    "/update",
     isAuthenticated,
     async (req, res, next) => {      
         try {      

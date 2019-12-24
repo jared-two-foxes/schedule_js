@@ -64,7 +64,7 @@ app.use("/auth", authRoutes);
 
 // Auth Routes
 const currentRouter = require("./tasks");
-app.use("/", currentRouter);
+app.use("/tasks", currentRouter);
 
 // And go!
 app.listen(port, function () {

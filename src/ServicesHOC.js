@@ -70,6 +70,8 @@ class ServicesHOC extends Component {
     }
 
     fetchUsers() {
+        //@todo: Early bail if not authorised.
+
         const { from, to } = this.state;
 
         this.setState({lastFetch: {from, to}, isFetching: true});
@@ -82,8 +84,7 @@ class ServicesHOC extends Component {
             params.endDate = to.getTime();
         }
         const paramString = new URLSearchParams(params);
-            
-        console.log( "calling fetch");
+        
         fetch(SERIVCES_URL + "?" + paramString.toString(), { method: 'GET' })
             .then(response => response.json())
             .then(result => {

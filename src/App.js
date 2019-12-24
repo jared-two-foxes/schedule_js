@@ -36,21 +36,15 @@ class App extends Component {
   }
 
   componentDidMount() {
-    /*credentials: "include",
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json",
-        "Access-Control-Allow-Credentials": true
-      }*/
-
     fetch('/auth/login/success', { method: "GET" })
       .then(response => {
         if (response.status === 200) return response.json();
         throw new Error("failed to authenticate user");
       })
       .then(responseJson => {
+        //@todo: Switch this based upon the content of the json object.
         this.setState({
-          authenticated: true, 
+          authenticated: responseJson.success, 
           user: responseJson.user
         })
       })
