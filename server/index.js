@@ -3,33 +3,30 @@
 /**
  * Required External Modules
  */
-
-require('dotenv').config();
-
 const express = require('express');
 const cors = require('cors');
-const path = require('path');
 
 const expressSession = require('express-session');
-const passport = require('passport')
-const passportSetup = require('./passport_setup')
+const passport = require('passport');
+const bodyParser = require('body-parser');
+const pino = require('express-pino-logger')();
 
 
 /**
  * App Variables
  */
 const app = express();
-const port = process.env.PORT || 3000;
+//const port = process.env.PORT || 3001;
+const port = 3001;
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(pino);
 
-const DIST_DIR = path.join(__dirname, '../dist');
-const HTML_FILE = path.join(DIST_DIR, 'index.html');
-
+require('./passport_setup')
 
 
 /**
  * Session Configuration
  */
-
 const session = {
     secret: "LoxodontaElephasMammuthusPalaeoloxodonPrimelephas",
     cookie: {}, // default { path: '/', httpOnly: true, secure: false, maxAge: null }
@@ -44,37 +41,30 @@ const session = {
 
 app.use(cors());
 
-app.use(express.static(DIST_DIR));
 app.use(expressSession(session));
 
 app.use(passport.initialize());
 app.use(passport.session());
 
 
+// const authCheck = (req, res, next) => {
+//     if (!req.user) {
+//         res.status(401).json({
+//             authenticated: false, 
+//             message: "user has not been authenticated"
+//         });   
+//     } else { 
+//         next();
+//     }
+// };
 
 // Auth Routes
 const authRoutes = require("./auth");
 app.use("/auth", authRoutes);
 
-const authCheck = (req, res, next) => {
-    if (!req.user) {
-        res.status(401).json({
-            authenticated: false, 
-            message: "user has not been authenticated"
-        });   
-    } else { 
-        next();
-    }
-};
-
 // Auth Routes
 const currentRouter = require("./tasks");
 app.use("/", currentRouter);
-
-// Main page.
-app.get( '/', (req, res) => {
-    res.sendFile( HTML_FILE );
-});
 
 // And go!
 app.listen(port, function () {

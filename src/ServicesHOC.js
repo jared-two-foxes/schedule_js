@@ -6,7 +6,7 @@ import SimpleOpportunityTable from './SimpleOpportunityTable'
 
 import 'react-day-picker/lib/style.css';
 
-const SERIVCES_URL = 'http://localhost:3000/tasks';
+const SERIVCES_URL = '/tasks';
 
 const columns = [
     { id: 'id', label: 'ID', minWidth: 170 },
@@ -60,13 +60,51 @@ class ServicesHOC extends Component {
         const range = DateUtils.addDayToRange(new Date(day), this.state);
 
         // Update if range differs.
-        if ( range.from != from || range.to != to ) {
+        if ( range.from !== from || range.to !== to ) {
             this.setState({ ...this.state, ...range });
         }
     }
 
     handleResetClick() {
         this.setState(this.getInitialState());
+    }
+
+    fetchUsers() {
+        const { from, to } = this.state;
+
+        this.setState({lastFetch: {from, to}, isFetching: true});
+
+        let params = {};
+        if ( from != null ) {
+            params.startDate = from.getTime();
+        }
+        if ( to != null ) {
+            params.endDate = to.getTime();
+        }
+        const paramString = new URLSearchParams(params);
+            
+        console.log( "calling fetch");
+        fetch(SERIVCES_URL + "?" + paramString.toString(), { method: 'GET' })
+            .then(response => response.json())
+            .then(result => {
+                this.setState({items: result, isFetching: false});
+            })
+            .catch( e => { 
+                console.log(e);
+                this.setState({isFetching: false});
+            });
+    }
+
+    componentDidMount() {
+        console.log("componentDidMount");
+        this.fetchUsers();
+    }
+
+    componentDidUpdate() {
+        const { from, to, lastFetch } = this.state;
+        if ( from !== lastFetch.from && to !== lastFetch.to ) {
+            this.fetchUsers();
+        }
     }
 
     render() {
@@ -98,38 +136,6 @@ class ServicesHOC extends Component {
             </div>
         )
     };
-
-    componentDidUpdate() {
-        const { from, to, lastFetch } = this.state;
-        if ( from != lastFetch.from && to != lastFetch.to ) {
-            this.fetchUsers();
-        }
-    }
-
-    fetchUsers() {
-        const { from, to } = this.state;
-
-        this.setState({lastFetch: {from, to}, isFetching: true});
-
-        let params = {};
-        if ( from != null ) {
-            params.startDate = from.getTime();
-        }
-        if ( to != null ) {
-            params.endDate = to.getTime();
-        }
-        const paramString = new URLSearchParams(params);
-            
-        fetch(SERIVCES_URL + "?" + paramString.toString(), { method: 'GET' })
-            .then(response => response.json())
-            .then(result => {
-                this.setState({items: result, isFetching: false});
-            })
-            .catch( e => { 
-                console.log(e);
-                this.setState({isFetching: false});
-            });
-    }
 }
 
 export default ServicesHOC;

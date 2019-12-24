@@ -52,7 +52,7 @@ router.get(
         // or end date is within the next 2 weeks?
         const startDate = !req.query.startDate ? Date.today() : new Date(parseInt(req.query.startDate));
         const endDate = !req.query.endDate ? Date.today().add({days: 7}) : new Date(parseInt(req.query.endDate));
-        
+
         let debugMsg = `Colating Services between ${startDate} & ${endDate}`
         console.log(debugMsg);
 
@@ -66,7 +66,7 @@ router.get(
                     break;
                 }
                 
-                for ( i in opportunities ) {
+                for ( let i in opportunities ) {
                     var o = opportunities[i];
                     var starts_at = new Date( o.starts_at );
 
@@ -78,7 +78,7 @@ router.get(
                     
                     // Filter items list for services
                     const service_items = items.filter( 
-                        (item) => { return (item.item_type == 'Service'); });
+                        (item) => { return (item.item_type === 'Service'); });
 
                     // Need to add the opportunity name to the struct thats sent down.
                     const service_items_with_opportunity_details = service_items.map( s => ({ ...s, opportunity_subject: o.subject}))

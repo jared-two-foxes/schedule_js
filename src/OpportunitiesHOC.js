@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import SimpleOpportunityTable from './SimpleOpportunityTable'
 
-const OPPORTUNITIES_SERIVCE_URL = 'http://localhost:3000/current/opportunities';
+const OPPORTUNITIES_SERIVCE_URL = '/current/opportunities';
 
 class OpportunityHOC extends Component {
     constructor(props) {

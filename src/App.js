@@ -10,7 +10,6 @@ import Link from '@material-ui/core/Link'
 import IconButton from '@material-ui/core/IconButton'
 import MenuIcon from '@material-ui/icons/Menu'
 
-//import logo from './logo.svg';
 import './App.scss';
 
 const useStyles = theme => ({
@@ -37,17 +36,16 @@ class App extends Component {
   }
 
   componentDidMount() {
-    fetch('http://localhost:3000/auth/login/success', {
-      method: "GET",
-      credentials: "include",
+    /*credentials: "include",
       headers: {
         Accept: "application/json",
         "Content-Type": "application/json",
         "Access-Control-Allow-Credentials": true
-      }
-    })
+      }*/
+
+    fetch('/auth/login/success', { method: "GET" })
       .then(response => {
-        if (response.status == 200) return response.json();
+        if (response.status === 200) return response.json();
         throw new Error("failed to authenticate user");
       })
       .then(responseJson => {
@@ -89,8 +87,8 @@ class App extends Component {
               Scheduler
             </Typography>
             { authenticated ? 
-              <Link color="inherit" href="http://localhost:3000/auth/logout">Log Out</Link> : 
-              <Link color="inherit" href="http://localhost:3000/auth/current">Log In</Link> }
+              <Link color="inherit" href="/auth/logout">Log Out</Link> : 
+              <Link color="inherit" href="/auth/current">Log In</Link> }
           </Toolbar>
         </AppBar>
         <ServicesHOC />
